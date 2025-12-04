@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getTimeAgo } from "./utils/time";
-import { posts as initialPosts, type Post } from "./mocks/posts";
+import { type Post } from "./mocks/posts";
+
+import { supabase } from "./utils/client";
 
 function HeartIcon({ filled }: { filled: boolean }) {
   if (filled) {
@@ -49,18 +51,21 @@ function PostCard({
       <div className="flex items-center gap-3 p-4">
         <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary">
           <Image
-            src={post.user.avatar}
-            alt={post.user.username}
+            src={
+              post.user?.avatar ||
+              "https://xynshcnkxdliapebmyaz.supabase.co/storage/v1/object/public/images/posts/unnamed-14.jpg"
+            }
+            alt={post.user?.username || "default_user"}
             fill
             className="object-cover"
           />
         </div>
         <div className="flex flex-col">
           <span className="font-semibold text-foreground">
-            {post.user.username}
+            {post.user?.username || "default_user"}
           </span>
           <span className="text-xs text-foreground/50">
-            {getTimeAgo(post.created_at)}
+            {getTimeAgo(new Date(post.created_at))}
           </span>
         </div>
       </div>
@@ -69,7 +74,7 @@ function PostCard({
       <div className="relative w-full aspect-square">
         <Image
           src={post.image_url}
-          alt={`Post de ${post.user.username}`}
+          alt={`Post de ${post.user?.username || "default_user"}`}
           fill
           className="object-cover"
         />
@@ -84,7 +89,7 @@ function PostCard({
             className="hover:scale-110 transition-transform active:scale-95"
             aria-label={post.isLiked ? "Quitar like" : "Dar like"}
           >
-            <HeartIcon filled={post.isLiked} />
+            <HeartIcon filled={post.isLiked || false} />
           </button>
           <span className="font-semibold text-foreground">
             {post.likes.toLocaleString()} likes
@@ -93,7 +98,9 @@ function PostCard({
 
         {/* Caption */}
         <p className="mt-2 text-foreground">
-          <span className="font-semibold">{post.user.username}</span>{" "}
+          <span className="font-semibold">
+            {post.user?.username || "default_user"}
+          </span>{" "}
           <span className="text-foreground/80">{post.caption}</span>
         </p>
       </div>
@@ -102,7 +109,7 @@ function PostCard({
 }
 
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   const handleLike = (postId: number | string) => {
     setPosts((prevPosts) =>
@@ -117,6 +124,23 @@ export default function Home() {
       )
     );
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data, error } = await supabase
+        .from("posts_new")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error al obtener los posts:", error);
+      } else {
+        setPosts(data);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
