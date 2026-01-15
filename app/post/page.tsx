@@ -33,8 +33,6 @@ export default function CreatePage() {
   };
 
   const uploadAndCreatePost = async (file: File) => {
-    const userId = "11111111-1111-1111-1111-111111111111";
-
     // 1️⃣ Preparar nombre del archivo
     const fileExt = file.name.split(".").pop();
     const fileName = `${file.name}-${Date.now()}.${fileExt}`;
@@ -42,7 +40,7 @@ export default function CreatePage() {
 
     // 2️⃣ Subir al bucket "images"
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("images")
+      .from("Images")
       .upload(filePath, file, {
         cacheControl: "3600",
         upsert: false,
@@ -55,7 +53,7 @@ export default function CreatePage() {
 
     // 3️⃣ Obtener URL pública
     const { data: urlData } = supabase.storage
-      .from("images")
+      .from("Images")
       .getPublicUrl(filePath);
 
     const publicUrl = urlData.publicUrl;
@@ -66,7 +64,6 @@ export default function CreatePage() {
     const { data: postData, error: postError } = await supabase
       .from("posts_new")
       .insert({
-        user_id: userId,
         image_url: publicUrl,
         caption: caption,
         likes: 0,

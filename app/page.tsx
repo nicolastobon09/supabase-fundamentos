@@ -53,7 +53,7 @@ function PostCard({
           <Image
             src={
               post.user?.avatar ||
-              "https://xynshcnkxdliapebmyaz.supabase.co/storage/v1/object/public/images/posts/unnamed-14.jpg"
+              "https://kpoploorbbxckwkzsxyg.supabase.co/storage/v1/object/public/Images/posts/image-4.jpg"
             }
             alt={post.user?.username || "default_user"}
             fill
